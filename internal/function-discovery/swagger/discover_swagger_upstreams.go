@@ -18,6 +18,8 @@ var commonSwaggerURIs = []string{
 	"/swagger.json",
 	"/swagger/docs/v1",
 	"/swagger/docs/v2",
+	"/api/v1/swagger",
+	"/api/v2/swagger",
 	"/v1/swagger",
 	"/v2/swagger",
 }
