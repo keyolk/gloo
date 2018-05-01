@@ -77,7 +77,7 @@
 1. Get the url of the ingress.  
 If you installed kubernetes using minikube, you can use this command:
 
-        GATEWAY_ADDR=$(kubectl get po -l gloo=ingress -n gloo-system -o 'jsonpath={.items[0].status.hostIP}'):$(kubectl get svc ingress -n gloo-system -o 'jsonpath={.spec.ports[?(@.name=="http")].nodePort}')
+        GATEWAY_ADDR=$(minikube ip):$(kubectl get svc ingress -n gloo-system -o 'jsonpath={.spec.ports[?(@.name=="http")].nodePort}')
         
         export GATEWAY_URL=http://$GATEWAY_ADDR
 

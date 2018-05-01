@@ -69,7 +69,7 @@ EOF
 
 Get gloo's SSL endpoint:
 ```
-HTTPS_GW=https://$(kubectl get po -l gloo=ingress -n gloo-system -o 'jsonpath={.items[0].status.hostIP}'):$(kubectl get svc ingress -n gloo-system -o 'jsonpath={.spec.ports[?(@.name=="https")].nodePort}')
+HTTPS_GW=https://$(minikube ip):$(kubectl get svc ingress -n gloo-system -o 'jsonpath={.spec.ports[?(@.name=="https")].nodePort}')
 ```
 
 Invoke the function:
