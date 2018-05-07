@@ -191,6 +191,15 @@
   revision = "ebf56d35bba727c68ac77f56f2fcf90b181851aa"
 
 [[projects]]
+  name = "github.com/fission/fission"
+  packages = [
+    ".",
+    "crd"
+  ]
+  revision = "db372c11eb5acb65b72b9b5796bbe63417558c8d"
+  version = "0.4.1"
+
+[[projects]]
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
@@ -1241,6 +1250,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c562f3c600110bc422057e99f9f32e3f006a02106e68dd8f7a9bdb1eff8027c0"
+  inputs-digest = "16f80850a095f0f687f5aa66e51ca0a2da6e7ee9a470cc5ffedfdd8024c1b203"
   solver-name = "gps-cdcl"
   solver-version = 1

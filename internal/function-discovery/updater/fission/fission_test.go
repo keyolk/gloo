@@ -1,11 +1,10 @@
-package fission_test
+package fission
 
 import (
+	"github.com/fission/fission/crd"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/solo-io/gloo/internal/function-discovery/updater/fission"
-	"github.com/solo-io/gloo/internal/function-discovery/updater/fission/imported"
 	"github.com/solo-io/gloo/pkg/api/types/v1"
 	"github.com/solo-io/gloo/pkg/plugins/kubernetes"
 	"github.com/solo-io/gloo/pkg/plugins/rest"
@@ -15,39 +14,30 @@ import (
 )
 
 type fakeFunctionInterface struct {
-	functionlist fission_imported.FunctionList
+	functionlist crd.FunctionList
 }
 
-func (ffi *fakeFunctionInterface) Create(*fission_imported.Function) (*fission_imported.Function, error) {
+func (ffi *fakeFunctionInterface) Create(*crd.Function) (*crd.Function, error) {
 	panic("should never be called")
 }
-func (ffi *fakeFunctionInterface) Get(name string) (*fission_imported.Function, error) {
+func (ffi *fakeFunctionInterface) Get(name string) (*crd.Function, error) {
 	panic("should never be called")
 }
-func (ffi *fakeFunctionInterface) Update(*fission_imported.Function) (*fission_imported.Function, error) {
+func (ffi *fakeFunctionInterface) Update(*crd.Function) (*crd.Function, error) {
 	panic("should never be called")
 }
 func (ffi *fakeFunctionInterface) Delete(name string, options *metav1.DeleteOptions) error {
 	panic("should never be called")
 }
-func (ffi *fakeFunctionInterface) List(opts metav1.ListOptions) (*fission_imported.FunctionList, error) {
+func (ffi *fakeFunctionInterface) List(opts metav1.ListOptions) (*crd.FunctionList, error) {
 	return &ffi.functionlist, nil
 }
 func (ffi *fakeFunctionInterface) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	panic("should never be called")
 }
 
-type fakeFissionClient struct {
-	ffi fakeFunctionInterface
-}
-
-func (ffc *fakeFissionClient) Functions(ns string) fission_imported.FunctionInterface {
-	return &ffc.ffi
-}
-
 var _ = Describe("Fission", func() {
-
-	var fr *FissionRetreiver
+	var fr *retreiver
 	var mockResolver *helpers.MockResolver
 	var client *fakeFissionClient
 	BeforeEach(func() {
@@ -58,7 +48,7 @@ var _ = Describe("Fission", func() {
 
 	It("should get list of functions", func() {
 
-		client.ffi.functionlist.Items = append(client.ffi.functionlist.Items, fission_imported.Function{
+		client.ffi.functionlist.Items = append(client.ffi.functionlist.Items, crd.Function{
 			Metadata: metav1.ObjectMeta{
 				Name: "func1",
 			},

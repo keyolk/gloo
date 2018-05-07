@@ -1,8 +1,8 @@
 package fission
 
 import (
-	"fmt"
-
+	"github.com/fission/fission"
+	"github.com/fission/fission/crd"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -10,8 +10,6 @@ import (
 	"github.com/solo-io/gloo/pkg/api/types/v1"
 	"github.com/solo-io/gloo/pkg/plugins/kubernetes"
 	"github.com/solo-io/gloo/pkg/plugins/rest"
-
-	"github.com/solo-io/gloo/internal/function-discovery/updater/fission/imported"
 )
 
 func GetFuncs(resolve resolver.Resolver, us *v1.Upstream) ([]*v1.Function, error) {
@@ -23,16 +21,7 @@ func GetFuncs(resolve resolver.Resolver, us *v1.Upstream) ([]*v1.Function, error
 	return fr.GetFuncs(resolve, us)
 }
 
-// ideally we want to use the function UrlForFunction from here:
-// https://github.com/fission/fission/blob/master/common.go
-// but importing it makes dep go crazy.
-func UrlForFunction(name string) string {
-	prefix := "/fission-function"
-	return fmt.Sprintf("%v/%v", prefix, name)
-}
-
 func IsFissionUpstream(us *v1.Upstream) bool {
-
 	if us.Type != kubernetes.UpstreamTypeKube {
 		return false
 	}
@@ -46,29 +35,25 @@ func IsFissionUpstream(us *v1.Upstream) bool {
 		return false
 	}
 	return true
-
 }
 
-type FissionFunctions []fission_imported.Function
-
-type FissionRetreiver struct {
-	fissionClient fission_imported.FissionClient
+type retreiver struct {
+	fission crd.FissionClient
 }
 
-func NewFissionRetreiver(c fission_imported.FissionClient) *FissionRetreiver {
-	return &FissionRetreiver{fissionClient: c}
+func NewFissionRetreiver(c *crd.FissionClient) *retreiver {
+	return &retreiver{fission: c}
 }
-func (fr *FissionRetreiver) listFissionFunctions(ns string) (FissionFunctions, error) {
-	var opts metav1.ListOptions
-	l, err := fr.fissionClient.Functions(ns).List(opts)
+
+func (fr *retreiver) listFissionFunctions(ns string) ([]crd.Function, error) {
+	l, err := fr.fission.Functions(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 	return l.Items, nil
 }
 
-func (fr *FissionRetreiver) GetFuncs(_ resolver.Resolver, us *v1.Upstream) ([]*v1.Function, error) {
-
+func (fr *retreiver) GetFuncs(_ resolver.Resolver, us *v1.Upstream) ([]*v1.Function, error) {
 	if !IsFissionUpstream(us) {
 		return nil, nil
 	}
@@ -88,22 +73,21 @@ func (fr *FissionRetreiver) GetFuncs(_ resolver.Resolver, us *v1.Upstream) ([]*v
 	return funcs, nil
 }
 
-func createFunction(fn fission_imported.Function) *v1.Function {
-
+func createFunction(fn crd.Function) *v1.Function {
 	headersTemplate := map[string]string{":method": "POST"}
 
 	return &v1.Function{
 		Name: fn.Metadata.Name,
 		Spec: rest.EncodeFunctionSpec(rest.Template{
-			Path:            UrlForFunction(fn.Metadata.Name),
+			Path:            fission.UrlForFunction(fn.Metadata.Name),
 			Header:          headersTemplate,
 			PassthroughBody: true,
 		}),
 	}
 }
 
-func getFissionClient() (fission_imported.FissionClient, error) {
-	fissionClient, _, _, err := fission_imported.MakeFissionClient()
+func getFissionClient() (*crd.FissionClient, error) {
+	fissionClient, _, _, err := crd.MakeFissionClient()
 	if err != nil {
 		return nil, err
 	}
